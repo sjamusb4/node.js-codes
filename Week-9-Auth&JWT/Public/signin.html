@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign In</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+      body {
+        font-family: sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f0f2f5;
+      }
+      .container {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        width: 300px;
+      }
+      h2 {
+        text-align: center;
+        margin-bottom: 1.5rem;
+      }
+      input {
+        width: 100%;
+        padding: 10px;
+        margin: 8px 0;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box; /* Ensures padding doesn't affect width */
+      }
+      button {
+        width: 100%;
+        padding: 10px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 10px;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      .toggle-text {
+        text-align: center;
+        font-size: 0.9rem;
+        margin-top: 15px;
+      }
+      a {
+        color: #007bff;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Sign In</h2>
+      <form onsubmit="handleSignIn(event)">
+        <input
+          id="userEmail"
+          type="text"
+          placeholder="Email Address"
+          required
+        />
+        <input
+          id="userPassword"
+          type="password"
+          placeholder="Password"
+          required
+        />
+        <button id="submitBtn" type="submit">Sign In</button>
+      </form>
+      <div class="toggle-text">
+        Create account <a href="/signup">Sign Up</a>
+      </div>
+    </div>
+  </body>
+
+  <script>
+    const userNameInput = document.getElementById("userEmail");
+    const passwordInput = document.getElementById("userPassword");
+    const btn = document.getElementById("submitBtn");
+
+    async function handleSignIn() {
+      event.preventDefault();
+
+      btn.disabled = true;
+      btn.innerText = "Signing in...";
+
+      const userName = userNameInput.value.trim();
+      const password = passwordInput.value.trim();
+
+      if (!userName || !password) {
+        alert("Username and password are required.");
+        return;
+      }
+
+      try {
+        const result = await axios.post("http://localhost:3000/signin", {
+          userName,
+          password,
+        });
+
+        const token = result.data.token;
+        localStorage.setItem("token", token);
+
+        userNameInput.value = "";
+        passwordInput.value = "";
+
+        alert("Sign In successful!");
+        window.location.href = "/";
+      } catch (error) {
+        const message =
+          error.response?.data?.message || "Invalid email or password.";
+        alert("Sign In failed: " + message);
+        console.error("Login Error:", error);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Sign In";
+      }
+    }
+  </script>
+</html>

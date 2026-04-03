@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Notes App</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 0;
+        display: flex;
+        height: 100vh;
+        background-color: #f8f9fa;
+      }
+
+      /* Left Side: Input Section */
+      .sidebar {
+        width: 300px;
+        padding: 20px;
+        background: white;
+        border-right: 1px solid #ddd;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .sidebar h2 {
+        margin-top: 0;
+        font-size: 1.2rem;
+      }
+
+      input,
+      textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+
+      button {
+        padding: 10px;
+        background: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      /* Right Side: Notes Display */
+      .main-content {
+        flex-grow: 1;
+        padding: 20px;
+        overflow-y: auto;
+      }
+
+      /* Loading Animation */
+      .loader {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Notes Grid */
+      .notes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+      }
+
+      .note-card {
+        background: #fff9c4; /* Post-it yellow */
+        padding: 15px;
+        border-radius: 4px;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      @keyframes fadeIn {
+        to {
+          visibility: visible;
+        }
+      }
+      @keyframes fadeOut {
+        to {
+          display: none;
+          visibility: hidden;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Left Side -->
+    <div class="sidebar">
+      <h2>New Note</h2>
+      <input id="noteTitle" type="text" placeholder="Note Title" required />
+      <textarea
+        id="noteDesc"
+        rows="5"
+        placeholder="Write your note here..."
+        required
+      ></textarea>
+      <button onclick="handleNoteSubmit()" type="button">Add Note</button>
+    </div>
+
+    <!-- Right Side -->
+    <div class="main-content">
+      <h2>Your Notes</h2>
+
+      <!-- Loading Spinner -->
+      <div class="loader"></div>
+
+      <!-- Notes List -->
+      <div class="notes-grid"></div>
+    </div>
+  </body>
+  <script>
+    const loader = document.querySelector(".loader");
+    const notesGrid = document.querySelector(".notes-grid");
+
+    async function handleNoteSubmit() {
+      const token = localStorage.getItem("token");
+      const titleElement = document.getElementById("noteTitle");
+      const descElement = document.getElementById("noteDesc");
+
+      const title = titleElement.value.trim(); // Removes extra spaces
+      const desc = descElement.value.trim();
+
+      if (!title || !desc) {
+        // alert("Please fill out both the title and the description!");
+        return;
+      }
+
+      renderNote(title, desc);
+
+      try {
+        await axios.post(
+          "http://localhost:3000/notes",
+          {
+            title: title,
+            description: desc,
+          },
+          {
+            headers: {
+              token: token,
+            },
+          },
+        );
+
+        titleElement.value = "";
+        descElement.value = "";
+      } catch (error) {
+        alert("Failed to save note to server.", error);
+      }
+    }
+
+    async function getNotes() {
+      const token = localStorage.getItem("token");
+      loader.style.display = "block";
+      try {
+        const result = await axios.get("http://localhost:3000/notes", {
+          headers: {
+            token: token,
+          },
+        });
+
+        const notes = result.data.notes || [];
+        notesGrid.innerHTML = ""; // Clear grid before rendering
+
+        if (notes.length === 0) {
+          notesGrid.innerHTML = "<p>No notes found.</p>";
+        } else {
+          notes.forEach((note) => {
+            renderNote(note.title, note.description);
+          });
+        }
+      } catch (error) {
+        window.location.href = "/signin";
+        console.error("Failed to fetch notes:", error);
+        notesGrid.innerHTML =
+          "<p style='color:red'>Error loading notes. Is the server running?</p>";
+      } finally {
+        loader.style.display = "none";
+      }
+    }
+
+    getNotes();
+
+    function renderNote(title, description) {
+      const card = document.createElement("div");
+      card.className = "note-card";
+
+      const titleTag = document.createElement("strong");
+      titleTag.textContent = title; // Safe from XSS
+
+      const descTag = document.createElement("p");
+      descTag.textContent = description; // Safe from XSS
+
+      card.appendChild(titleTag);
+      card.appendChild(descTag);
+      notesGrid.appendChild(card);
+    }
+  </script>
+</html>
