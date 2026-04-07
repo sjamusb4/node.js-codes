@@ -67,8 +67,9 @@ app.post("/signup", async (req, res) => {
   // const newUser = new User({ username: userName, password: hashedPassword });
   // await newUser.save();
   
-  await User.create({ username: username, password: hashedPassword });
+  const newUser = await User.create({ username: username, password: hashedPassword });
   res.status(201).json({
+    id: newUser._id,
     message: "User Created Successfully!",
   });
 });
@@ -94,9 +95,10 @@ app.post("/signin", async (req, res) => {
   if (!isPasswordCorrect) {
     return res.status(400).json({ error: "Invalid credentials" });
   }
-  const token = jwt.sign({ username }, JWT_SECRET);
+  const token = jwt.sign({ username: foundUser.username }, JWT_SECRET);
   res.json({
-    token,
+    token: token,
+    message: "User signed in successfully!",
   });
 });
 
