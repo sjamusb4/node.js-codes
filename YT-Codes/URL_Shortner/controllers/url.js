@@ -7,15 +7,16 @@ async function handelGenerateNewShortURL(req, res) {
 
   const shortId = nanoid(8);
 
-  await URL.create({
+  const result = await URL.create({
     shortId: shortId,
     redirectURL: body.url,
     visitHistory: [],
   });
 
-  res.status(200).json({
-    id: shortId,
-  });
+  return res.render("home", { shortId: result.shortId });
+  // res.status(200).json({
+  //   id: shortId,
+  // });
 }
 
 async function handelRedirectToURL(req, res) {
