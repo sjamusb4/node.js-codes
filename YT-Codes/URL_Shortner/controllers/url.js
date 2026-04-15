@@ -11,6 +11,7 @@ async function handelGenerateNewShortURL(req, res) {
     shortId: shortId,
     redirectURL: body.url,
     visitHistory: [],
+    createdBy: req.user._id, // Associate the URL with the authenticated user
   });
 
   return res.render("home", { shortId: result.shortId });
