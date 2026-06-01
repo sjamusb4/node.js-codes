@@ -1,9 +1,10 @@
 const { Pool } = require("pg");
 const express = require("express");
 const app = express();
+require("dotenv").config();
 
 const pool = new Pool({
-  connectionString: "",
+  connectionString: process.env.NEON_DB_URI,
 });
 
 app.use(express.json());
