@@ -1,20 +1,19 @@
-
 const express = require("express");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-require('dotenv').config({ path: '../.env' , quiet: true });
-const {User} = require('./model/model');
+require("dotenv").config({ path: "../.env", quiet: true });
+const { User } = require("./model/model");
 const app = express();
 app.use(express.json());
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const dbURI = process.env.MONGODB_URI;
 
-
-mongoose.connect(dbURI)
+mongoose
+  .connect(dbURI)
   .then(() => console.log("Connected to MongoDB!"))
-  .catch(err => console.log(err));
+  .catch((err) => console.log(err));
 
 function authMiddleware(req, res, next) {
   const token = req.headers.token;
@@ -28,7 +27,6 @@ function authMiddleware(req, res, next) {
     const userExists = User.findOne({ username: decoded.userName });
 
     console.log(userExists);
-    
 
     if (userExists) {
       req.userName = decoded.userName;
@@ -41,9 +39,9 @@ function authMiddleware(req, res, next) {
   }
 }
 
-app.get('/',authMiddleware,(req,res)=>{
-    res.send("Server is OK");
-})
+app.get("/", authMiddleware, (req, res) => {
+  res.send("Server is OK");
+});
 
 //POST - sign up
 app.post("/signup", async (req, res) => {
@@ -66,8 +64,11 @@ app.post("/signup", async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, 10);
   // const newUser = new User({ username: userName, password: hashedPassword });
   // await newUser.save();
-  
-  const newUser = await User.create({ username: username, password: hashedPassword });
+
+  const newUser = await User.create({
+    username: username,
+    password: hashedPassword,
+  });
   res.status(201).json({
     id: newUser._id,
     message: "User Created Successfully!",
@@ -76,8 +77,8 @@ app.post("/signup", async (req, res) => {
 
 //POST - sign in
 app.post("/signin", async (req, res) => {
-    const username = req.body.username;
-    const password = req.body.password;
+  const username = req.body.username;
+  const password = req.body.password;
 
   if (!username?.trim() || !password?.trim()) {
     return res.status(400).json({
