@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web Socket</title>
+    <style>
+      .messages {
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background-color: #f0f0f0;
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        overflow-y: auto;
+        height: 200px;
+        width: auto;
+      }
+      p {
+        margin: 0;
+        padding: 10px;
+        background-color: #e0e0e0;
+        border-radius: 5px;
+      }
+
+      li {
+        list-style: none;
+        padding: 10px;
+        background-color: #e0e0e0;
+        border-radius: 5px;
+      }
+
+      .container {
+        display: flex;
+        gap: 10px;
+        background-color: #f0f0f0;
+        padding: 10px;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Hello, World!</h1>
+
+    <div style="width: 500px; display: flex; flex-direction: column; gap: 20px">
+      <div class="messages"></div>
+
+      <div class="container">
+        <input
+          style="
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+          "
+          type="text"
+          name=""
+          placeholder="Enter Your Message"
+          id="messageInput"
+        />
+        <button
+          style="
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+          "
+          id="sendbtn"
+        >
+          Send
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const sendBtn = document.getElementById("sendbtn");
+      const messageInput = document.getElementById("messageInput");
+      const messagesDiv = document.querySelector(".messages");
+
+      const port = window.location.port || 3000;
+      const connection = new WebSocket(`ws://localhost:${port}`);
+      connection.onopen = () => {
+        console.log("Connection Established");
+
+        connection.onmessage = (event) => {
+          console.log("Message from Server : ", event.data);
+          const li = document.createElement("li");
+          li.textContent = JSON.parse(event.data).message;
+          messagesDiv.appendChild(li);
+        };
+
+        sendBtn.addEventListener("click", () => {
+          const message = messageInput.value;
+          connection.send(JSON.stringify({ message }));
+        });
+      };
+    </script>
+  </body>
+</html>
