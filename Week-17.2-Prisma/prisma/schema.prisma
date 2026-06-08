@@ -13,13 +13,22 @@ datasource db {
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  username String @unique
+  id       Int     @id @default(autoincrement())
+  username String  @unique
   password String
+  todos    Todos[] // Define the relationship between User and Todos (one-to-many)
 }
 
-model Posts {
-  post_id     Int    @id @default(autoincrement())
+model Todos {
+  id          Int     @id @default(autoincrement())
   title       String
   description String
+  is_done     Boolean @default(false)
+  userId      Int
+  user        User    @relation(fields: [userId], references: [id]) // Define the relationship between Todos and User
 }
+
+// @relation("UserTodos", fields: [userId], references: [id]) 
+// It means that the `Todos` model has a foreign key `userId` that references the `id` field in the `User` model. 
+// This establishes a relationship between the two models, allowing you to easily query for a user's todos or 
+// find out which user a particular todo belongs to.

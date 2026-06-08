@@ -64,6 +64,57 @@ app.get("/users", async (req, res) => {
   }
 });
 
+app.get("/user/:userId", async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        id: Number(userId),
+      },
+      select: {
+        id: true,
+        username: true,
+        todos: true,
+      },
+    });
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch users" });
+  }
+});
+app.post("/todo", async (req, res) => {
+  const { title, description, userId } = req.body;
+  try {
+    const todo = await prisma.todos.create({
+      data: {
+        title,
+        description,
+        userId: userId,
+      },
+    });
+    res.json(todo);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to create Todo" });
+  }
+});
+
+app.get("/todo/:userId", async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const todo = await prisma.todos.findMany({
+      where: {
+        userId: Number(userId),
+      },
+    });
+    if (!todo) {
+      return res.status(404).json({ error: "No todo found for this user" });
+    }
+    res.json(todo);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to get Todo" });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
